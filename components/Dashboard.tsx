@@ -32,25 +32,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, foodLogs, weightLogs
 
   return (
     <div className="p-6 pb-24 space-y-8 animate-fade-in">
-      {/* Header & Status Pill */}
-      <div className="flex justify-between items-end">
-        <div>
+      {/* Header & Streak */}
+      <div>
+        <div className="flex justify-between items-center mb-1">
           <h1 className="text-3xl font-bold text-white tracking-tight">Hello, Athlete</h1>
-          <p className="text-zinc-400 text-sm mt-1 font-medium">{user.goal}</p>
+          
+          {/* Streak Pill */}
+          <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-full shadow-sm">
+            <svg className="w-3.5 h-3.5 text-orange-500" fill="currentColor" viewBox="0 0 24 24"><path d="M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 13 4.85 13.95 3C13.08 3.06 12.29 3.33 11.62 3.8C7.27 6.77 8.29 13.18 10.28 15.93C10.5 16.23 10.74 16.5 11 16.76C11 16.76 11.03 16.79 11.03 16.79C12.44 18.06 14.33 18.66 16.2 18.35C16.32 18.33 16.44 18.31 16.55 18.27C17.69 17.96 18.67 17.3 19.34 16.34C20.89 14.15 19.86 12.03 17.66 11.2ZM12.13 15.39C10.68 13.14 10.27 8.84 12.87 6.4C12.92 8.24 13.88 9.92 15.24 11.14C15.82 11.65 16.62 12.29 16.91 13.08C17.5 14.7 16 16.21 14.45 16.55C13.59 16.74 12.71 16.21 12.13 15.39Z"/></svg>
+            <span className="text-sm font-bold text-white tabular-nums">{user.streakDays}</span>
+            <span className="text-xs text-zinc-500 font-bold uppercase tracking-wide">Day Streak</span>
+          </div>
         </div>
         
-        {/* Unified Status Pill */}
-        <div className="flex items-center gap-3 bg-zinc-900/80 border border-zinc-800 p-1.5 pr-4 rounded-full shadow-lg backdrop-blur-sm">
-             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-lime-400 to-lime-600 flex items-center justify-center text-black font-black text-xs shadow-inner">
-                LVL
-             </div>
-             <div className="flex flex-col">
-                 <span className="text-[10px] uppercase text-zinc-500 font-bold tracking-wider leading-none mb-0.5">Streak</span>
-                 <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-bold text-white leading-none">{user.streakDays}</span>
-                    <svg className="w-3.5 h-3.5 text-orange-500" fill="currentColor" viewBox="0 0 24 24"><path d="M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 13 4.85 13.95 3C13.08 3.06 12.29 3.33 11.62 3.8C7.27 6.77 8.29 13.18 10.28 15.93C10.5 16.23 10.74 16.5 11 16.76C11 16.76 11.03 16.79 11.03 16.79C12.44 18.06 14.33 18.66 16.2 18.35C16.32 18.33 16.44 18.31 16.55 18.27C17.69 17.96 18.67 17.3 19.34 16.34C20.89 14.15 19.86 12.03 17.66 11.2ZM12.13 15.39C10.68 13.14 10.27 8.84 12.87 6.4C12.92 8.24 13.88 9.92 15.24 11.14C15.82 11.65 16.62 12.29 16.91 13.08C17.5 14.7 16 16.21 14.45 16.55C13.59 16.74 12.71 16.21 12.13 15.39Z"/></svg>
-                 </div>
-             </div>
+        <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-lime-400 shadow-[0_0_8px_rgba(163,230,53,0.8)]"></span>
+            <p className="text-zinc-400 text-sm font-medium">{user.goal}</p>
         </div>
       </div>
 

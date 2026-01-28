@@ -5,12 +5,20 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "node": "20.10.0"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "node": "20.10.0"
     },
-    "production": {}
+    "production": {
+      "node": "20.10.0",
+      "env": {
+        "API_KEY": "AIzaSyCsVLGnPLOipMZ1PoiSL7IAD_hsREc7pGM",
+        "VITE_GEMINI_API_KEY": "AIzaSyCsVLGnPLOipMZ1PoiSL7IAD_hsREc7pGM"
+      }
+    }
   },
   "submit": {
     "production": {}
