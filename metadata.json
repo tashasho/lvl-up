@@ -1,0 +1,7 @@
+{
+  "name": "lvlup",
+  "description": "A high-performance health app automating fitness tracking with AI vision and systems thinking.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
