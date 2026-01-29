@@ -19,8 +19,11 @@ export interface UserProfile {
   tdee: number;
   targetKcal: number;
   targetProtein: number;
+  targetBurn: number; // Daily burnt calorie target
+  currentBurn: number; // Simulated Google Fit burn
+  hp: number; // Health Points (0-100)
   onboarded: boolean;
-  streakDays: number; // Current streak count
+  streakDays: number;
 }
 
 export interface WeightLog {
@@ -50,7 +53,7 @@ export interface Exercise {
   name: string;
   category: string;
   defaultSets: number;
-  defaultReps: string; // e.g., "12,10,8,8"
+  defaultReps: string;
 }
 
 export interface WorkoutSet {
@@ -64,11 +67,17 @@ export interface WorkoutLog {
   id: string;
   exerciseId: string;
   sets: WorkoutSet[];
-  date: string; // ISO date string YYYY-MM-DD
+  date: string;
 }
 
 export interface ProgressPhoto {
   id: string;
   date: string;
   uri: string;
+}
+
+export interface PlaceRecommendation {
+  name: string;
+  uri: string;
+  description: string;
 }

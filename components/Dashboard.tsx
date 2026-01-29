@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserProfile, FoodLogEntry, WeightLog } from '../types';
 import { MacroRing } from './MacroRing';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Button } from './Button';
+import { NearbyExplorer } from './NearbyExplorer';
 
 interface DashboardProps {
   user: UserProfile;
@@ -18,9 +19,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, foodLogs, weightLogs
   const totalKcal = foodLogs.reduce((acc, log) => acc + log.items.reduce((s, i) => s + i.calories, 0), 0);
   const totalProtein = foodLogs.reduce((acc, log) => acc + log.items.reduce((s, i) => s + i.proteinG, 0), 0);
 
-  // Check if targets are hit for streak visualization (simple check)
+  // Targets logic
   const kcalHit = totalKcal >= user.targetKcal - 200 && totalKcal <= user.targetKcal + 200;
   const proteinHit = totalProtein >= user.targetProtein - 10;
+  const burnHit = user.currentBurn >= user.targetBurn;
 
   const handleWeightSubmit = () => {
     if (newWeight) {
@@ -32,48 +34,68 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, foodLogs, weightLogs
 
   return (
     <div className="p-6 pb-24 space-y-8 animate-fade-in">
-      {/* Header & Streak */}
-      <div>
-        <div className="flex justify-between items-center mb-1">
-          <h1 className="text-3xl font-bold text-white tracking-tight">Hello, Athlete</h1>
-          
-          {/* Streak Pill */}
-          <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-full shadow-sm">
-            <svg className="w-3.5 h-3.5 text-orange-500" fill="currentColor" viewBox="0 0 24 24"><path d="M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 13 4.85 13.95 3C13.08 3.06 12.29 3.33 11.62 3.8C7.27 6.77 8.29 13.18 10.28 15.93C10.5 16.23 10.74 16.5 11 16.76C11 16.76 11.03 16.79 11.03 16.79C12.44 18.06 14.33 18.66 16.2 18.35C16.32 18.33 16.44 18.31 16.55 18.27C17.69 17.96 18.67 17.3 19.34 16.34C20.89 14.15 19.86 12.03 17.66 11.2ZM12.13 15.39C10.68 13.14 10.27 8.84 12.87 6.4C12.92 8.24 13.88 9.92 15.24 11.14C15.82 11.65 16.62 12.29 16.91 13.08C17.5 14.7 16 16.21 14.45 16.55C13.59 16.74 12.71 16.21 12.13 15.39Z"/></svg>
-            <span className="text-sm font-bold text-white tabular-nums">{user.streakDays}</span>
-            <span className="text-xs text-zinc-500 font-bold uppercase tracking-wide">Day Streak</span>
+      {/* Header & Status Pill */}
+      <div className="flex justify-between items-start">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <h1 className="text-3xl font-bold text-white tracking-tight">Hello, Athlete</h1>
+            <div className="bg-zinc-900 border border-zinc-800 px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm">
+                 <span className="text-[10px] font-black text-lime-400 uppercase">HP</span>
+                 <div className="w-12 h-2 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
+                    <div className="h-full bg-lime-400 transition-all duration-1000" style={{ width: `${user.hp}%` }}></div>
+                 </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-lime-400 shadow-[0_0_8px_rgba(163,230,53,0.8)]"></span>
+            <p className="text-zinc-400 text-sm font-medium">{user.goal}</p>
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-lime-400 shadow-[0_0_8px_rgba(163,230,53,0.8)]"></span>
-            <p className="text-zinc-400 text-sm font-medium">{user.goal}</p>
+        {/* Streak Pill */}
+        <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-full shadow-sm mt-1">
+          <svg className="w-3.5 h-3.5 text-orange-500" fill="currentColor" viewBox="0 0 24 24"><path d="M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 13 4.85 13.95 3C13.08 3.06 12.29 3.33 11.62 3.8C7.27 6.77 8.29 13.18 10.28 15.93C10.5 16.23 10.74 16.5 11 16.76C11 16.76 11.03 16.79 11.03 16.79C12.44 18.06 14.33 18.66 16.2 18.35C16.32 18.33 16.44 18.31 16.55 18.27C17.69 17.96 18.67 17.3 19.34 16.34C20.89 14.15 19.86 12.03 17.66 11.2ZM12.13 15.39C10.68 13.14 10.27 8.84 12.87 6.4C12.92 8.24 13.88 9.92 15.24 11.14C15.82 11.65 16.62 12.29 16.91 13.08C17.5 14.7 16 16.21 14.45 16.55C13.59 16.74 12.71 16.21 12.13 15.39Z"/></svg>
+          <span className="text-sm font-bold text-white tabular-nums">{user.streakDays}</span>
+          <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Day</span>
         </div>
       </div>
 
-      {/* Macros */}
-      <div className="flex justify-between items-center gap-4 px-2">
-        <div className="relative flex-1 flex justify-center">
+      {/* Primary Goal Trackers */}
+      <div className="grid grid-cols-3 gap-2">
+        <div className="relative bg-zinc-900/40 p-2 rounded-2xl border border-zinc-800/50">
             <MacroRing 
                 current={totalKcal} 
                 target={user.targetKcal} 
-                color="#a3e635" // lime-400
-                label="Calories"
+                color="#e4e4e7" 
+                label="Consumed"
                 unit="kcal"
             />
-            {kcalHit && <div className="absolute top-0 right-2 bg-lime-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full animate-bounce shadow-lg">HIT!</div>}
+            {kcalHit && <div className="absolute -top-1 -right-1 bg-white text-black text-[8px] font-black px-1.5 py-0.5 rounded shadow-lg z-20">HIT</div>}
         </div>
-        <div className="relative flex-1 flex justify-center">
+        <div className="relative bg-zinc-900/40 p-2 rounded-2xl border border-zinc-800/50">
             <MacroRing 
                 current={totalProtein} 
                 target={user.targetProtein} 
-                color="#3b82f6" // blue-500
+                color="#3b82f6" 
                 label="Protein"
                 unit="g"
             />
-            {proteinHit && <div className="absolute top-0 right-2 bg-blue-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full animate-bounce shadow-lg">HIT!</div>}
+            {proteinHit && <div className="absolute -top-1 -right-1 bg-blue-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-lg z-20">HIT</div>}
+        </div>
+        <div className="relative bg-zinc-900/40 p-2 rounded-2xl border border-zinc-800/50">
+            <MacroRing 
+                current={user.currentBurn} 
+                target={user.targetBurn} 
+                color="#a3e635" 
+                label="Burnt"
+                unit="kcal"
+            />
+            {burnHit && <div className="absolute -top-1 -right-1 bg-lime-500 text-black text-[8px] font-black px-1.5 py-0.5 rounded shadow-lg z-20">HIT</div>}
         </div>
       </div>
+
+      {/* Maps Grounding Component */}
+      <NearbyExplorer />
 
       {/* Weight Chart */}
       <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800 shadow-xl">
@@ -156,8 +178,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, foodLogs, weightLogs
                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
                      </div>
                      <div>
-                         <p className="text-sm font-medium text-zinc-200">Apple Health</p>
-                         <p className="text-xs text-zinc-500">Syncing steps...</p>
+                         <p className="text-sm font-medium text-zinc-200">Apple Health / Google Fit</p>
+                         <p className="text-xs text-zinc-500">Auto-tracking motion burn...</p>
                      </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -165,7 +187,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, foodLogs, weightLogs
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-lime-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-lime-500"></span>
                     </span>
-                    <span className="text-xs text-zinc-600 font-mono">Active</span>
+                    <span className="text-xs text-zinc-600 font-mono">Syncing</span>
                 </div>
              </div>
         </div>

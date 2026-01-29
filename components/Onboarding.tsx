@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { UserProfile, Gender, Goal } from '../types';
 import { calculateTDEE, calculateTargets } from '../services/calcService';
@@ -29,6 +30,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     const tdee = calculateTDEE(Number(formData.weight), Number(formData.height), Number(formData.age), formData.gender);
     const { kcal, protein } = calculateTargets(tdee, formData.goal);
 
+    // Fixed: Added missing properties required by UserProfile interface (targetBurn, currentBurn, hp)
     const profile: UserProfile = {
       age: Number(formData.age),
       gender: formData.gender,
@@ -38,6 +40,9 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
       tdee,
       targetKcal: kcal,
       targetProtein: protein,
+      targetBurn: 400, // Initial default target
+      currentBurn: 0,
+      hp: 100,
       onboarded: true,
       streakDays: 0 // Will be set to 1 in App.tsx handleOnboardingComplete
     };

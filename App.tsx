@@ -14,7 +14,33 @@ const App: React.FC = () => {
   const [foodLogs, setFoodLogs] = useState<FoodLogEntry[]>([]);
   const [weightLogs, setWeightLogs] = useState<WeightLog[]>([]);
 
-  // Simulate persistence for demo
+  // Simulation: Burnt calories increase randomly to mimic Google Fit data
+  useEffect(() => {
+    if (!user) return;
+    
+    const interval = setInterval(() => {
+      setUser(prev => {
+        if (!prev) return null;
+        // Increment burn by 1-3 calories per minute to simulate movement
+        const newBurn = prev.currentBurn + (Math.random() * 2);
+        
+        // Calculate HP: 100 max. Weighted by how close we are to goals.
+        // Simplified: +HP if targets met, -HP if over consumed or sedentary.
+        const proteinRatio = (foodLogs.reduce((acc, log) => acc + log.items.reduce((s, i) => s + i.proteinG, 0), 0) / prev.targetProtein);
+        const burnRatio = (newBurn / prev.targetBurn);
+        const hp = Math.min(100, Math.round((proteinRatio * 30) + (burnRatio * 40) + 30));
+
+        return {
+          ...prev,
+          currentBurn: newBurn,
+          hp
+        };
+      });
+    }, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, [user, foodLogs]);
+
   useEffect(() => {
     const savedUser = localStorage.getItem('lvlup_user');
     const savedWeight = localStorage.getItem('lvlup_weight');
@@ -25,7 +51,6 @@ const App: React.FC = () => {
     if (savedWeight) {
         setWeightLogs(JSON.parse(savedWeight));
     } else {
-        // Initial dummy data for the chart to look good immediately
         const dummyData = [
             { id: '1', date: '2023-10-20', weightKg: 72.5 },
             { id: '2', date: '2023-10-21', weightKg: 72.3 },
@@ -38,12 +63,16 @@ const App: React.FC = () => {
   }, []);
 
   const handleOnboardingComplete = (profile: UserProfile) => {
-    // Initialize streak to 0 or 1 for new users
-    const profileWithStreak = { ...profile, streakDays: 1 };
-    setUser(profileWithStreak);
-    localStorage.setItem('lvlup_user', JSON.stringify(profileWithStreak));
+    const profileWithGoals = { 
+        ...profile, 
+        streakDays: 1, 
+        targetBurn: 400, // Default burn target
+        currentBurn: 50, // Initial burn
+        hp: 80 // Initial HP
+    };
+    setUser(profileWithGoals);
+    localStorage.setItem('lvlup_user', JSON.stringify(profileWithGoals));
     
-    // Set initial weight log
     const initialLog: WeightLog = {
         id: 'init',
         date: new Date().toISOString().split('T')[0],
@@ -71,10 +100,7 @@ const App: React.FC = () => {
         weightKg: weight
     };
     const updatedLogs = [...weightLogs, newLog].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    
-    // Keep only last 30 days for chart clarity in this MVP
     if (updatedLogs.length > 30) updatedLogs.shift();
-
     setWeightLogs(updatedLogs);
     localStorage.setItem('lvlup_weight', JSON.stringify(updatedLogs));
   };
@@ -101,7 +127,6 @@ const App: React.FC = () => {
         {activeTab === 'progress' && <ProgressGallery />}
       </main>
       
-      {/* Hide nav on camera screen to maximize view */}
       {activeTab !== 'food' && (
         <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
       )}
